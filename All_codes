@@ -36,6 +36,19 @@ int Center_Servo = 2869;
 int Max_Servo = 3399;
 int Min_Servo =2269;
 
+unsigned char new_heading = 0; // flag for count of compass timing
+unsigned char new_range = 0; // flag for count of ranger timing
+unsigned char print_flag = 0; // flag for count of printing
+unsigned int heading;
+unsigned int range;
+unsigned int light;
+int compass_adj = 0; // correction value from compass
+int range_adj = 0; // correction value from ranger
+unsigned char r_count; // overflow count for range
+unsigned char h_count; // overflow count for heading
+unsigned char print_count; // overflow count for printing
+__sbit __at ____ RUN;
+
 //-----------------------------------------------------------------------------
 // Main Function
 //-----------------------------------------------------------------------------

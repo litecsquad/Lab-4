@@ -1,1 +1,308 @@
+/* Sample code for Lab 3.1. This code provides a basic start. */
+#include <c8051_SDCC.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <i2c.h>
+//-----------------------------------------------------------------------------
+// Function Prototypes
+//-----------------------------------------------------------------------------
+void Port_Init(void);
+void PCA_Init (void);
+void XBR0_Init();
+void Change_Pulsewidth(char part, int raw_val);
+void PCA_ISR ( void ) __interrupt 9;
+void SMB_Init(void);
+void ping (void);
+unsigned int Compass();
+void Ranger(void);
+void ADC_Init(void);
+void ping(void);
 
+
+//-----------------------------------------------------------------------------
+// Global Variables
+//-----------------------------------------------------------------------------
+__sbit __at 0xB6 SS; //Port3 Pin 6
+
+unsigned int comp = 0; //compass value
+unsigned int r_ranger = 0; //flag to indiciate to read from ranger
+unsigned int r_comp = 0; //flag to indiciate to read from compass
+unsigned int r_light = 0; //flag to indiciate to read from light sensor
+unsigned int PW;
+unsigned int desired_heading = 900;
+int counts = 0;
+int buf;
+char wait;
+int Center_Servo = 2869;
+int Max_Servo = 3399;
+int Min_Servo =2269;
+
+//-----------------------------------------------------------------------------
+// Main Function
+//-----------------------------------------------------------------------------
+void main(void)
+{	
+    Sys_Init();
+    putchar(' '); 
+    Port_Init();
+    XBR0_Init();
+    PCA_Init();
+	SMB_Init();
+	
+	printf("Welcome to Lab 4!\r\n");
+	while (!SS)
+	{
+		// Turn everything off, assuming this means LED
+		printf(" If you want to change speed type s, if you want to change heading type h, if you want to change gains type g and if you are done type f\r\n");
+		wait = 0;
+		while (wait = 0)
+		{
+			wait = getchar();
+		}
+		
+		if (wait = 's')
+		{
+		}
+		else if (wait = 'h')
+		{
+		}
+		else if (wait = 'g')
+		{
+		}
+		else if (wait = 'f')
+		{
+		}
+	
+
+	}
+	while (SS)
+	{
+		if f_comp = 1
+		{
+
+			PW = Center_Servo;
+			comp = Compass();
+			Change_Pulsewidth(1,comp);
+			comp_f = 0
+		}
+		if f_ranger = 1
+		{
+			range = Ranger()
+			//write the rest, not sure
+		}
+		if f_LCD = 1
+		{
+			// Clear LCD?
+			printf(""); // print current heading
+			//print current range
+			f_LCD = 0
+
+		}
+
+	}
+
+
+	
+}
+//-----------------------------------------------------------------------------
+// Port_Init
+//-----------------------------------------------------------------------------
+//
+// Set up ports for input and output
+//
+void Port_Init(void)
+{
+    P1MDOUT |= 0x0F;    //Set output pin for CEX0, CEX2 and CEX3 in push-pull mode in port 1.0, 1.1, 1.3
+    P2MDOUT |= 0x01;    //Set Port 2 bits 0 to output (0000 0001)
+    
+    P2MDOUT &= 0x1F;    //Set Port 2 bits 0-6 to input (000X XXXX)
+    P2 |= ~0x1F;        //High impedance mode
+}
+
+//-----------------------------------------------------------------------------
+// XBR0_Init
+//-----------------------------------------------------------------------------
+//
+// Set up the crossbar
+//
+void XBR0_Init()
+{
+    XBR0 = 0x27;  //configure with UART, SPI, SMBus and CEX channels
+
+}
+
+//-----------------------------------------------------------------------------
+// PCA_Init
+//-----------------------------------------------------------------------------
+//
+// Set up Programmable Counter Array
+//
+void PCA_Init(void) //do not touch
+{
+    PCA0CPM0 = 0xC2; 
+	PCA0CPM2 = PCA0CPM3 = 0xC2; //mode 0, 2, 3 in 16-bit compare mode
+   
+    PCA0CN = 0x40; //  Enable PCA counter
+    
+    PCA0MD = 0x81; //CF enabled, use SYSCLK/12
+    
+    EIE1 |= 0x08;       // enable PCA Interrupt request (by masking)
+    EA = 1;         // enable global interrupts (by sbit)
+}
+
+//-----------------------------------------------------------------------------
+// PCA_ISR
+//----------------------------------------------------------------------------
+
+// NEEDS TO BE CHANGED TO INVOLVE EVER PART
+void PCA_ISR ( void ) __interrupt 9
+{
+	//when theres an overflow
+	if (CF)
+	{
+		counts++;		
+		PCA0 = 28672; //rest to PCA Start
+		CF = 0; //reset overflow 
+		//every ~40ms, read from the compass
+		if((counts >2) == 0)
+		{
+			r_comp = 1;
+			counts = 0;
+		}
+		//every 4 overflows (~80ms), read from light sensor and ultrasound ranger, increment print and reset count		
+	}
+	PCA0CN &= 0xC0;
+}
+
+void ADC_Init(void)
+{
+ /// Needs to be set up
+}
+
+unsigned int read_AD_input(unsigned char n)
+{
+	// needs to be filled in
+
+}
+
+void Ranger(void)
+{
+	// moved from ranger part
+}
+
+
+//-------------------------------------------
+// CHANGE_PULSEWIDTH
+//-------------------------------------------
+void Change_Pulsewidth(char part, int raw_val)
+
+{	
+
+	int error;
+	unsigned int temp_servo;
+
+// Need to add all parts to this
+
+//Compass part
+	int error;
+	unsigned int temp_servo;
+
+	if (part == 1)
+	{	
+
+		error = desired_heading - raw_val;
+		temp_servo = ((1)*error + PW_CENTER);
+
+		if ( error > 1800)
+		{
+			error -= 3600; // Fix value
+
+		}
+		else if ( error <- 1800)
+		{
+			error += 3600; // Fix value
+		}		
+		printf("error = %d \r\n",error);
+
+		if ( temp_servo > PW_MAX )
+		{
+			temp_servo = PW_MAX;
+		}
+
+		if (temp_servo < PW_MIN)
+		{
+			temp_servo = PW_MIN;
+		}
+
+		PW = temp_servo;
+
+		buf=0xFFFF-PW;
+		printf("PW = %u \r\n",buf);
+
+
+		PCA0CP0 = buf;
+
+	    printf("PulseWidth= %u\n\rDesired_Heading= %u\n\rActual_Heading= %u\r\n", PW,desired_heading,raw_val);
+	    
+	}
+
+
+//ranger part
+
+//led part
+	
+}
+
+
+
+/*///////////////////////*/
+unsigned int Compass()
+{
+	unsigned char addr = 0xC0; // the address of the sensor, 0xC0 for the compass
+	unsigned char Data[2]; // an array with a length of 2
+	unsigned int comp;
+	i2c_read_data(addr, 2, Data, 2); // read two byte, starting at reg 2
+
+	comp =(((unsigned int)Data[0] << 8) | Data[1]); //combine the two data values into one value
+								
+	return comp;
+}
+
+unsigned int LightSensor()
+{
+	//Moved from Light Sensor code
+}
+
+
+/***********************************/
+/*******     RANGER     ************/
+/***********************************/
+unsigned int Read_Ranger()
+{
+	unsigned char Data[2];
+	unsigned int range = 0;
+	unsigned char addr=0xE0; // the address of the ranger is 0xE0
+
+	i2c_read_data(addr, 2, Data, 2);
+	
+	range = (((unsigned int)Data[0] << 8) | Data[1]);
+	
+	return range;
+}
+
+/**********************************/
+
+void ping(void)
+{
+	unsigned int Data[1];
+	unsigned char addr = 0xC0; 
+	Data[0] = 0x51; // write 0x51 to reg 0 of the ranger:
+	i2c_write_data(addr, 0, Data, 1);// write one byte of data to reg 0 at addr 
+}
+
+
+void SMB_Init(void)
+{
+	 SMB0CR=0x93; /* set SCL to 100 kHz (actual freq ~ 94.594 kHz)*/
+     ENSMB=1; /* bit 6 of SMB0CN, enable the SMBus */
+}

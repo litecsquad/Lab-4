@@ -21,7 +21,6 @@ void ping(void);
 //-----------------------------------------------------------------------------
 // Global Variables
 //-----------------------------------------------------------------------------
-__sbit __at 0xB6 SS; //Port3 Pin 6
 
 unsigned int comp = 0; //compass value
 unsigned int r_ranger = 0; //flag to indiciate to read from ranger
@@ -30,11 +29,10 @@ unsigned int r_light = 0; //flag to indiciate to read from light sensor
 unsigned int PW;
 unsigned int desired_heading = 900;
 int counts = 0;
-int buf;
+int Center_Servo = 2769;
+int Max_Servo = 3899;
+int Min_Servo =2069;
 char wait;
-int Center_Servo = 2869;
-int Max_Servo = 3399;
-int Min_Servo =2269;
 
 unsigned char new_heading = 0; // flag for count of compass timing
 unsigned char new_range = 0; // flag for count of ranger timing
@@ -47,7 +45,8 @@ int range_adj = 0; // correction value from ranger
 unsigned char r_count; // overflow count for range
 unsigned char h_count; // overflow count for heading
 unsigned char print_count; // overflow count for printing
-__sbit __at ____ RUN;
+
+__sbit __at 0xB7 SS; //Port3 Pin 6
 
 //-----------------------------------------------------------------------------
 // Main Function

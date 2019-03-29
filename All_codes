@@ -61,7 +61,7 @@ void main(void)
 		
 		if (wait = 's')
 		{
-            getchar_nw();
+            		getchar_nw();
 		}
 		else if (wait = 'h')
 		{
@@ -155,27 +155,34 @@ void PCA_Init(void) //do not touch
 //----------------------------------------------------------------------------
 
 // NEEDS TO BE CHANGED TO INVOLVE EVER PART
-void PCA_ISR ( void ) __interrupt 9
+void PCA_ISR(void) __interrupt 9
 {
-	//when theres an overflow
 	if (CF)
-	{
-		counts++;		
-		PCA0 = 28672; //rest to PCA Start
-		CF = 0; //reset overflow 
-		//every ~40ms, read from the compass
-		if((counts >2) == 0)
-		{
-			r_comp = 1;
-			counts = 0;
+	 {
+		 PCA0 = PCA_start;
+		 CF = 0; // clear overflow indicator
+		 h_count++;
+		 if (h_count>=2)
+		 {
+			 new_heading=1;
+			 h_count = 0;
+		 }
+		 r_count++;
+		 if (r_count>=4)
+		 {
+			 new_range = 1;
+			 r_count = 0;
 		}
-		//every 4 overflows (~80ms), read from light sensor and ultrasound ranger, increment print and reset count		
-	}
-	PCA0CN &= 0xC0;
+	 	if (print_count>=25)
+	 	{
+			 print_flag = 1;
+			 print_count = 0;
+	 	}
+	 }
 }
 
 //----------------------------------------------------------------------------
-// ADC_Init
+// ADC
 //----------------------------------------------------------------------------
 void ADC_Init(void)
 {
@@ -188,20 +195,12 @@ unsigned int read_AD_input(unsigned char n)
 
 }
 
-
-void Ranger(void)
-{
-	// moved from ranger part
-}
-
-
 //-------------------------------------------
 // CHANGE_PULSEWIDTH
 //-------------------------------------------
 void Change_Pulsewidth(char part, int raw_val)
 
 {	
-
 	int error;
 	unsigned int temp_servo;
 
@@ -249,9 +248,6 @@ void Change_Pulsewidth(char part, int raw_val)
 	    printf("PulseWidth= %u\n\rDesired_Heading= %u\n\rActual_Heading= %u\r\n", PW,desired_heading,raw_val);
 	    
 	}
-
-
-//ranger part
 
 //led part
 	

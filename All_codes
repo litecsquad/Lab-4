@@ -8,15 +8,14 @@
 void Port_Init(void);
 void PCA_Init (void);
 void XBR0_Init();
-void Change_Pulsewidth(unsigned char part, unsigned int raw_val);
+void Change_Pulsewidth(char part, int raw_val);
 void PCA_ISR ( void ) __interrupt 9;
 void SMB_Init(void);
 void ping (void);
 unsigned int Compass();
-int Ranger(void);
+void Ranger(void);
 void ADC_Init(void);
 void ping(void);
-int Pick_Heading(void);
 
 
 //-----------------------------------------------------------------------------
@@ -28,10 +27,8 @@ unsigned int r_ranger = 0; //flag to indiciate to read from ranger
 unsigned int r_comp = 0; //flag to indiciate to read from compass
 unsigned int r_light = 0; //flag to indiciate to read from light sensor
 unsigned int PW;
-unsigned int desired_servo = 900;
+unsigned int desired_heading = 900;
 int counts = 0;
-int servo_counts;
-int Servo_PW;
 int Center_Servo = 2769;
 int Max_Servo = 3899;
 int Min_Servo =2069;
@@ -48,11 +45,8 @@ int range_adj = 0; // correction value from ranger
 unsigned char r_count; // overflow count for range
 unsigned char h_count; // overflow count for heading
 unsigned char print_count; // overflow count for printing
-int want;
-char r_LCD;
-int buf;
 
-__sbit __at 0xB7 SS; //Port3 Pin 6
+__sbit __at 0xB7 SS; //Port3 Pin 7 -- RUN/STOP
 
 //-----------------------------------------------------------------------------
 // Main Function
@@ -66,42 +60,60 @@ void main(void)
     PCA_Init();
 	SMB_Init();
 	
-	printf("Welcome to Lab 4!\r\n");
-	printf("If you want to change your desired heading for the servo, press q while the slide switch is on\r\n");
+	printf("\r\nWelcome to Lab 4!\r\n");
+	while (!SS)
+	{
+		// Turn everything off, assuming this means LED
+		printf("If you want to change speed type s,\r\nif you want to change heading type h,\r\nif you want to change gains type g,\r\nand if you are done, type f\r\n");
+		wait = 0;
+		while (wait = 0)
+		{
+			wait = getchar();
+		}
+		
+		if (wait = 's')
+		{
+            		getchar_nw();
+		}
+		else if (wait = 'h')
+		{
+		}
+		else if (wait = 'g')
+		{
+		}
+		else if (wait = 'f')
+		{
+		}
+	
 
+	}
 	while (SS)
 	{
-		if (r_comp = 1)
+		if f_comp = 1
 		{
-			
-			want = getchar();
-			if (want = 'q')
-			{
-				desired_servo = Pick_Heading();
-			}
-			Servo_PW = Center_Servo;
+
+			PW = Center_Servo;
 			comp = Compass();
 			Change_Pulsewidth(1,comp);
-			r_comp = 0;
+			comp_f = 0
 		}
-		if (r_ranger = 1)
+		if f_ranger = 1
 		{
-			range = Ranger();
+			range = Ranger()
 			//write the rest, not sure
 		}
-		if (r_LCD = 1)
+		if f_LCD = 1
 		{
 			// Clear LCD?
 			printf(""); // print current heading
 			//print current range
-			r_LCD = 0;
+			f_LCD = 0
 
 		}
 
 	}
 
 
-	
 	
 }
 //-----------------------------------------------------------------------------
@@ -139,8 +151,7 @@ void XBR0_Init()
 //
 void PCA_Init(void) //do not touch
 {
-    PCA0CPM0 = 0xC2; 
-	PCA0CPM2 = PCA0CPM3 = 0xC2; //mode 0, 2, 3 in 16-bit compare mode
+    PCA0CPM0 = PCA0CPM2 = PCA0CPM3 = 0xC2; //mode 0, 2, 3 in 16-bit compare mode
    
     PCA0CN = 0x40; //  Enable PCA counter
     
@@ -159,28 +170,18 @@ void PCA_ISR(void) __interrupt 9
 {
 	if (CF)
 	 {
-	 // Compass part
-	 	servo_counts++;		
-		PCA0 = 28672; //rest to PCA Start
-		CF = 0; //reset overflow 
-		//every ~40ms, read from the compass
-		if((counts >2) == 0)
-		{
-			r_comp = 1;
-			counts = 0;
-		}
-		//every 4 overflows (~80ms), read from light sensor and ultrasound ranger, increment print and reset count
-	 // End Compass part
+		 PCA0 = PCA_start;
+		 CF = 0; // clear overflow indicator
 		 h_count++;
 		 if (h_count>=2)
 		 {
-			 r_LCD=1;
+			 new_heading=1;
 			 h_count = 0;
 		 }
 		 r_count++;
 		 if (r_count>=4)
 		 {
-			 r_LCD = 1;
+			 new_range = 1;
 			 r_count = 0;
 		}
 	 	if (print_count>=25)
@@ -204,26 +205,29 @@ void ADC_Init(void)
 unsigned int read_AD_input(unsigned char n)
 {
 	// needs to be filled in
-return n;
+
 }
 
 //-------------------------------------------
 // CHANGE_PULSEWIDTH
 //-------------------------------------------
-void Change_Pulsewidth(unsigned char part, unsigned int raw_val)
+void Change_Pulsewidth(char part, int raw_val)
 
 {	
+	int error;
+	unsigned int temp_servo;
 
+// Need to add all parts to this
 
-	//Compass part
-	unsigned int error;
+//Compass part
+	int error;
 	unsigned int temp_servo;
 
 	if (part == 1)
 	{	
 
-		error = desired_servo - raw_val;
-		temp_servo = ((1)*error + Center_Servo);
+		error = desired_heading - raw_val;
+		temp_servo = ((1)*error + PW_CENTER);
 
 		if ( error > 1800)
 		{
@@ -236,25 +240,25 @@ void Change_Pulsewidth(unsigned char part, unsigned int raw_val)
 		}		
 		printf("error = %d \r\n",error);
 
-		if ( temp_servo > Max_Servo )
+		if ( temp_servo > PW_MAX )
 		{
-			temp_servo = Max_Servo;
+			temp_servo = PW_MAX;
 		}
 
-		if (temp_servo < Min_Servo)
+		if (temp_servo < PW_MIN)
 		{
-			temp_servo = Min_Servo;
+			temp_servo = PW_MIN;
 		}
 
-		Servo_PW = temp_servo;
+		PW = temp_servo;
 
-		buf=0xFFFF-Servo_PW;
+		buf=0xFFFF-PW;
 		printf("PW = %u \r\n",buf);
 
 
 		PCA0CP0 = buf;
 
-	    //printf("PulseWidth= %u\n\rDesired_Heading= %u\n\rActual_Heading= %u\r\n", PW,desired_heading,raw_val);
+	    printf("PulseWidth= %u\n\rDesired_Heading= %u\n\rActual_Heading= %u\r\n", PW,desired_heading,raw_val);
 	    
 	}
 
@@ -280,13 +284,12 @@ unsigned int Compass()
 unsigned int LightSensor()
 {
 	//Moved from Light Sensor code
-	return 0;
 }
 
 
-/***********************************/
-/*******     RANGER     ************/
-/***********************************/
+/***********************************************/
+/****************    RANGER     ****************/
+/***********************************************/
 unsigned int Read_Ranger()
 {
 	unsigned char Data[2];
@@ -299,44 +302,34 @@ unsigned int Read_Ranger()
 	
 	return range;
 }
+/************************************************/
+void Drive_Motor(void)
+{
+    if (55 < range)
+    {
+        Steering_Servo();
+    }
+    else if (SERVO_PW == SERVO_MAX && 15 < range < 20)
+    {
+        MOTOR_PW = 0;
+    }
+    else if (10 < range < 14)
+    {
+        MOTOR_PW = 0;
+    }
+    else if (10 >= range)
+    {
+        MOTOR_PW = MOTOR_MIN
+    }
+    else if (55 == range)
+    {
+        //steering 
+    }
+    PCA0CP0 = 0xFFFF - MOTOR_PW;
+	PCA0CP2 = 0xFFFF - MOTOR_PW;
+}
 
 /**********************************/
-int Update_Value(int Constant, unsigned char incr, int maxval, int minval)
-{
-	int deflt;
-	char input;
-	// 'c' - default, 'i' - increment, 'd' - decrement, 'u' - update and return
-	deflt = Constant;
-	while(1)
-	{
-		input = getchar();
-		if (input == 'c') Constant = deflt;
-		if (input == 'i')
-		{
-			Constant += incr;
-			if (Constant > maxval) Constant = maxval;
-		}
-		if (input == 'd')
-		{
-			Constant -= incr;
-			if (Constant < minval) Constant = minval;
-		}
-		if (input == 'u') return Constant;
-	}
-}
-
-int Pick_Heading(void) // allows operator to pick desired heading
-{
-	int new_heading = 1;
-	printf("What value do you want the new heading to be?");
-	while (new_heading = 1)
-	{
-		new_heading = kpd_input(0);
-	}
-	return new_heading;
-	
-
-}
 
 void ping(void)
 {

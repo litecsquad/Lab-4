@@ -79,9 +79,6 @@ void main(void)
 	//PCA0CPL2 = 0xFFFF - MOTOR_PW;
 	//PCA0CPH2 = (0xFFFF - MOTOR_PW) >> 8;
 	
-    /*The steering gain must also be selectable. As with the heading, the entry is done using the
-    keypad. Entry options include: 1) select from a menu, 2) increment or decrement using key
-    strokes, or 3) key in a value. (Please only pick one option, not all.)*/
 	PCA0CP2 = 0xFFFF - MOTOR_NEUT;
 	while(1)
 	{
@@ -138,8 +135,6 @@ void XBR0_Init()
 // PCA
 //-------------------------------------------------------------------------
 
-/*The steering servo and the speed controller must be updated every 20 ms. The PCA hardware
-does this automatically as long as it is properly configured.*/
 
 void PCA_Init(void) //do not touch
 {

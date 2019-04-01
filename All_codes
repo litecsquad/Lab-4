@@ -64,58 +64,52 @@ void main(void)
     SMB_Init();
     ADC_printing();
 	
-	printf("\r\nWelcome to Lab 4!\r\n");
-	while (!SS)
-	{
-		// Turn everything off, assuming this means LED
-		printf("If you want to change speed type s,\r\nif you want to change heading type h,\r\nif you want to change gains type g,\r\nand if you are done, type f\r\n");
-		wait = 0;
-		while (wait = 0)
-		{
-			wait = getchar();
-		}
-		
-		if (wait = 's')
-		{
-            		getchar_nw();
-		}
-		else if (wait = 'h')
-		{
-		}
-		else if (wait = 'g')
-		{
-		}
-		else if (wait = 'f')
-		{
-		}
-	
+		printf("Welcome to Lab 4!\r\n");
 
-	}
+	i = 0;
 	while (SS)
 	{
-		if f_comp = 1
+		
+		if (i == 0)
 		{
+			lcd_print("Pick a dseired heading for the servo\r\n");
+			desired_servo = kpd_input(0);
+			lcd_clear();
+			lcd_print("Pick a gain for the servo\r\n");
+			servo_gain = kpd_input(0);
+			lcd_clear();
+			lcd_print("Pick a gain for the ranger\r\n");
+			ranger_gain = kpd_input(0);
+			lcd_clear();
+			i++;
 
-			PW = Center_Servo;
+		}
+		lcd_print("Servo_PW
+		if (r_comp == 1)
+		{
+			
+		
+			Servo_PW = Center_Servo;
 			comp = Compass();
 			Change_Pulsewidth(1,comp);
-			comp_f = 0
+			r_comp = 0;
 		}
-		if f_ranger = 1
+		if (r_ranger == 1)
 		{
-			range = Ranger()
+			range = Ranger();
 			//write the rest, not sure
 		}
-		if f_LCD = 1
+		if (r_LCD == 1)
 		{
 			// Clear LCD?
 			printf(""); // print current heading
 			//print current range
-			f_LCD = 0
+			r_LCD = 0;
 
 		}
 
 	}
+
 
 
 	

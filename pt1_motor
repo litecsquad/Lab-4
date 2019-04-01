@@ -1,0 +1,237 @@
+/*  Names: Galilea Olvera,
+    Section: 4
+    Date: 3/22/2019
+    File name: LAB 3-3 PART 1
+*/
+
+//-----------------------------------------------------------------------------
+// Compiler Directives
+//-----------------------------------------------------------------------------
+#include <c8051_SDCC.h> //include files. This file is available online
+#include <stdio.h>      //
+#include <stdlib.h>     //
+#include <i2c.h>        //
+
+//-----------------------------------------------------------------------------
+// Function Prototypes
+//-----------------------------------------------------------------------------
+void Port_Init(void);			// Initialize ports for input and output
+void PCA_Init(void);			// Initialize PCA
+void XBR0_Init(void);			// Initialize XBR0s
+void PCA_ISR(void) __interrupt 9;	// Initialize Timer Interrupt Service 
+void SMB_Init(void);
+void Drive_Motor(void);
+unsigned int Read_Ranger();
+void ping(void);	
+
+//-----------------------------------------------------------------------------
+// Global Variables
+//-----------------------------------------------------------------------------
+__sbit __at 0xB7 SS; // Port3 Pin 7
+
+unsigned int counts;
+unsigned char Data;
+
+unsigned int light = 0;
+unsigned int compass = 0;
+int new_range = 0;
+unsigned int r_compass = 0;
+unsigned int r_light = 0;
+
+int r_count = 0;
+unsigned int range;
+unsigned int r_ranger;
+unsigned int print;
+unsigned char input;
+unsigned char addr = 0xE0;
+
+//Part 1 Globals
+unsigned int MOTOR_PW = 2028; 	//1.1ms
+unsigned int MOTOR_MIN = 2028; 	//1.1ms
+unsigned int MOTOR_MAX = 3502;	    //1.9ms
+unsigned int MOTOR_NEUT = 2764;	//1.5ms
+unsigned char cont;
+unsigned char input_1;
+unsigned int neutral_height = 900;
+unsigned int error;
+unsigned int temp_servo_pw;
+
+
+ 
+//-----------------------------------------------------------------------------
+// Main Function
+//-----------------------------------------------------------------------------
+
+void main(void)
+{
+	//declare local variables
+    
+	//initialize board
+	Sys_Init();         // System Initialization
+	Port_Init();        // Initialize Ports
+	PCA_Init();         // Initialize PCA
+	XBR0_Init();
+	SMB_Init();
+	putchar(' '); 
+
+
+	//restore original PW
+	//PCA0CPL2 = 0xFFFF - MOTOR_PW;
+	//PCA0CPH2 = (0xFFFF - MOTOR_PW) >> 8;
+	
+	PCA0CP2 = 0xFFFF - MOTOR_NEUT;
+	while(1)
+	{
+
+		//make sure everything is off
+		//printf("going into the loop");
+		
+		if (SS) //(!SS1 && !SS2 && !SS3)
+		{
+			printf("\r\nEVERYTHING OFF");
+		}
+		else if (!SS) //if mode 1 on
+        {   
+            print = 0;
+	        r_count = 0;
+	        r_ranger = 0;
+
+            while(!SS) //while mode 1 remains on
+            {
+                if(r_ranger == 1) 
+                {
+                    set_speed();
+                    range = Read_Ranger();
+                    ping(); //return data
+                    //READ LIGHT SENSOR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    Drive_Motor();
+                    r_ranger = 0;
+                }
+            }
+        }
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Port_Init
+//-----------------------------------------------------------------------------
+void Port_Init(void)
+{
+    P1MDOUT |= 0x0F;    //Set output pin for CEX0, CEX2 and CEX3 in push-pull mode in port 1.0, 1.1, 1.3
+    P2MDOUT |= 0x01;    //Set Port 2 bits 0 to output (0000 0001)
+    
+    P2MDOUT &= 0x1F;    //Set Port 2 bits 0-6 to input (000X XXXX)
+    P2 |= ~0x1F;        //High impedance mode
+}
+
+//-----------------------------------------------------------------------------
+// XBR0_Init
+//-----------------------------------------------------------------------------
+void XBR0_Init()
+{
+    XBR0 = 0x27;
+}
+//-------------------------------------------------------------------------
+// PCA
+//-------------------------------------------------------------------------
+void PCA_Init(void) //do not touch
+{
+	PCA0CPM0 = PCA0CPM2 = PCA0CPM3 = 0xC2; //mode 0, 2, 3 in 16-bit compare mode
+   
+	PCA0CN = 0x40; //  Enable PCA counter
+    
+	PCA0MD = 0x81; //CF enabled, use SYSCLK/12
+	
+	EIE1 |= 0x08;		// enable PCA Interrupt request (by masking)
+	EA = 1;			// enable global interrupts (by sbit)
+}
+
+void PCA_ISR ( void ) __interrupt 9
+{
+	if (CF)
+	{	
+		CF = 0;
+		r_count++;	
+		PCA0 = 28672; //PCA_start
+		
+		if(r_count >= 4)
+		{
+			r_ranger = 1;
+			r_count = 0;
+			print++;
+		}
+	}	
+	PCA0CN &= 0x40;	//handle other interrupts
+}
+/*********************************************/
+void Drive_Motor(void)
+{
+    if (55 < range)
+    {
+        Steering_Servo();
+    }
+    else if (SERVO_PW == SERVO_MAX && 15 < range < 20)
+    {
+        MOTOR_PW = 0;
+    }
+    else if (10 < range < 14)
+    {
+        MOTOR_PW = 0;
+    }
+    else if (10 >= range)
+    {
+        MOTOR_PW = MOTOR_MIN
+    }
+    else if (55 == range)
+    {
+        //steering 
+    }
+    PCA0CP0 = 0xFFFF - MOTOR_PW;
+	PCA0CP2 = 0xFFFF - MOTOR_PW;
+}
+/********************************************************/
+unsigned int Speed_Control(void)
+{
+    ADC_value = read_ADC();
+    if (ADC_value < 1.2) //can i do decimals?????????????
+    {
+        //adjust speed pulse width
+    }
+    else if (ADC_value > 1.2)
+    {
+        //adjust pulsewidth
+    }
+    else if (ADC_value == 1.2)
+    {
+        MOTOR_PW = MOTOR_NEUT;
+    }
+
+    PCA0CP2 = 0xFFFF - MOTOR_PW;
+}
+/*********************************************************/
+void ping(void)
+{
+	unsigned int Data[1];
+	unsigned char addr = 0xE0; 
+	Data[0] = 0x51; // write 0x51 to reg 0 of the ranger:
+	i2c_write_data(addr, 0, Data, 1);// write one byte of data to reg 0 at addr 
+}
+/***************** initialize the SMB *******************/
+void SMB_Init(void)
+{
+	SMB0CR = 0x93; /* set SCL to 100KHz (actual freq ~ 94,594Hz)*/
+	ENSMB = 1; /* bit 6 of SMB0CN, enable the SMBus */
+}
+/*****************************/
+unsigned int Read_Ranger()
+{
+	unsigned char Data[2];
+	unsigned int range = 0;
+	unsigned char addr=0xE0; // the address of the ranger is 0xE0
+
+	i2c_read_data(addr, 2, Data, 2);
+	
+	range = (((unsigned int)Data[0] << 8) | Data[1]);
+	
+	return range;
+}

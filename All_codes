@@ -84,8 +84,7 @@ void main(void)
 			i++;
 
 		}
-		lcd_print("Servo_PW
-		if (r_comp == 1)
+	
 		{
 			
 		
@@ -101,9 +100,9 @@ void main(void)
 		}
 		if (r_LCD == 1)
 		{
-			// Clear LCD?
-			printf(""); // print current heading
-			//print current range
+			
+			lcd_clear();
+			lcd_print("Heading = %u    Range = %u \r\n Battery = %u\r\n", heading, range, battery);
 			r_LCD = 0;
 
 		}
@@ -168,26 +167,29 @@ void PCA_ISR(void) __interrupt 9
 {
 	if (CF)
 	 {
-		 PCA0 = PCA_start;
-		 counts++
-		 CF = 0; // clear overflow indicator
-		 h_count++;
-		 if (h_count>=2)
-		 {
-			 new_heading=1;
-			 h_count = 0;
-		 }
-		 r_count++;
-		 if (r_count>=4)
-		 {
-			 new_range = 1;
-			 r_count = 0;
+		//when theres an overflow	
+		counts++;	//increment count	
+		PCA0 = 28672; //rest to PCA Start
+		CF = 0; //reset overflow flag
+		
+		//1 overflow = 20ms
+		//every two overflows (~40ms), read from compass
+		if((counts %2) == 0)
+		{
+			r_compass = 1;
 		}
-	 	if (print_count>=25)
-	 	{
-			 print_flag = 1;
-			 print_count = 0;
-	 	}
+		//every 4 overflows (~80ms), read from light sensor and ultrasound ranger, increment print and reset count
+		if((counts %4) == 0)
+		{
+			r_light = 1;
+			r_ranger = 1;
+		}	
+		//every 20 overflows(~400 ms), output to lcd display and reset count
+		if (counts == 20)
+		{
+			lcd = 1;
+			counts = 0;
+		}			
 		if (counts%5000 = 1) //if 1000ms = 1s pass (20ms/count)
 		{
 			print_ADC = 1; //set print_ADC flag

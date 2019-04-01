@@ -357,33 +357,6 @@ unsigned int Read_Ranger()
 	
 	return range;
 }
-/************************************************/
-void Drive_Motor(void)
-{
-    if (55 < range)
-    {
-        Steering_Servo();
-    }
-    else if (SERVO_PW == SERVO_MAX && 15 < range < 20)
-    {
-        MOTOR_PW = 0;
-    }
-    else if (10 < range < 14)
-    {
-        MOTOR_PW = 0;
-    }
-    else if (10 >= range)
-    {
-        MOTOR_PW = MOTOR_MIN
-    }
-    else if (55 == range)
-    {
-        //steering 
-    }
-    PCA0CP0 = 0xFFFF - MOTOR_PW;
-	PCA0CP2 = 0xFFFF - MOTOR_PW;
-}
-
 /**********************************/
 
 void ping(void)

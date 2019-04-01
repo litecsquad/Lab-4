@@ -61,7 +61,8 @@ void main(void)
     Port_Init();
     XBR0_Init();
     PCA_Init();
-	SMB_Init();
+    SMB_Init();
+    ADC_printing();
 	
 	printf("\r\nWelcome to Lab 4!\r\n");
 	while (!SS)

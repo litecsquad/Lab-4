@@ -291,6 +291,36 @@ void Change_Pulsewidth(char part, int raw_val)
 	
 }
 
+/*********************************************/
+void Drive_Motor(void)
+{
+    if(MOTOR_PW < MOTOR_MIN)
+    {
+        MOTOR_PW = MOTOR_MIN;
+    }
+	else if(0 <= range <= 80)
+	{
+        MOTOR_PW = MOTOR_MAX - ((range-10)*24); //increase proportionally
+        LED = 0; //LED IS ON
+
+        if (35 < range <= 45) //if object distance ~40cms
+        {
+            MOTOR_PW = MOTOR_PW; //no change
+        }
+    }
+	else if (80 < range) 
+	{
+		MOTOR_PW = desired_heading; //as determined by compass
+	}
+
+    else if (MOTOR_PW > MOTOR_MAX)
+    {
+        MOTOR_PW = MOTOR_MAX;
+    }
+
+	PCA0CP2 = 0xFFFF - MOTOR_PW;
+}
+
 
 
 /*///////////////////////*/

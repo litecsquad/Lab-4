@@ -1,1 +1,37 @@
+//variables
+unsigned int my_ADC;
+unsigned char print_ADCl;
 
+
+//function prototypes
+unsigned char read_AD_input(unsigned char);
+void ADC_Init(void);
+
+
+//main
+my_ADC = read_AD_input(4);    //USE P 1.4 FOR MEASURING ADC
+my_ADC *= 2400/256;            //convert 
+if (print_ADC == 1)
+{
+  printf("ADC value: %c mV", my_ADC);
+}
+
+
+//functinos
+unsigned char read_AD_input(unsigned char n) // Do not touch
+{
+	AMX1SL = n; /* Set P1.n as the analog input for ADC1 */
+	ADC1CN = ADC1CN & ~0x20; /* Clear the “Conversion Completed” flag */
+	ADC1CN = ADC1CN | 0x10; /* Initiate A/D conversion */
+	while ((ADC1CN & 0x20) == 0x00); /* Wait for conversion to complete */
+	return ADC1; /* Return digital value in ADC1 register */
+}
+
+void ADC_Init(void) //Do not touch
+{
+    REF0CN = 0x03; /* Set Vref to use internal reference voltage (2.4V) */
+    ADC1CN = 0x80; /* Enable A/D converter (ADC1) */
+    ADC1CF |= 0x01; /* Set A/D converter gain to 1 */
+}
+
+/*ADD PRINT_ADC FLAG TO OVERFLOWS*/

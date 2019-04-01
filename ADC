@@ -1,6 +1,8 @@
+/*USE P1.4 FOR MESAURING ADC*/
+
 //variables
 unsigned int my_ADC;
-unsigned char print_ADCl;
+unsigned char print_ADC = 0;
 
 
 //function prototypes
@@ -8,16 +10,19 @@ unsigned char read_AD_input(unsigned char);
 void ADC_Init(void);
 
 
-//main
-my_ADC = read_AD_input(4);    //USE P 1.4 FOR MEASURING ADC
-my_ADC *= 2400/256;            //convert 
-if (print_ADC == 1)
+//my function
+void ADC_printing
 {
-  printf("ADC value: %c mV", my_ADC);
+	/*USE P1.4 FOR MESAURING ADC*/
+	if (print_ADC == 1)
+	{
+		my_ADC = read_AD_input(4);	//return ADC value at P1.4
+		my_ADC *= 2400/256;		//convert to mV
+		printf("ADC value: %c mV", my_ADC);
+		print_ADC = 0;			//clear print flag
+	}
 }
 
-
-//functinos
 unsigned char read_AD_input(unsigned char n) // Do not touch
 {
 	AMX1SL = n; /* Set P1.n as the analog input for ADC1 */
@@ -29,9 +34,15 @@ unsigned char read_AD_input(unsigned char n) // Do not touch
 
 void ADC_Init(void) //Do not touch
 {
-    REF0CN = 0x03; /* Set Vref to use internal reference voltage (2.4V) */
-    ADC1CN = 0x80; /* Enable A/D converter (ADC1) */
-    ADC1CF |= 0x01; /* Set A/D converter gain to 1 */
+	REF0CN = 0x03; /* Set Vref to use internal reference voltage (2.4V) */
+	ADC1CN = 0x80; /* Enable A/D converter (ADC1) */\
+	ADC1CF |= 0x01; /* Set A/D converter gain to 1 */
 }
 
 /*ADD PRINT_ADC FLAG TO OVERFLOWS*/
+{
+	if (counts%5000 = 1) //if 1000ms = 1s pass (20ms/count)
+	{
+		print_ADC = 1;
+	}
+}

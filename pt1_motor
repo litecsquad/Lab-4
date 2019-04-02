@@ -91,9 +91,9 @@ void main(void)
 			printf("\r\nEVERYTHING OFF");
 		}
 		else if (!SS)
-        {   
-            printf('\r\nSWITCH TURNED ON')
-            print = 0;
+		{   
+		printf('\r\nSWITCH TURNED ON');
+		print = 0;
 	        r_count = 0;
 	        r_ranger = 0;
             
@@ -114,7 +114,6 @@ void main(void)
                 }
             }
         }
-	}
 }
 
 //-----------------------------------------------------------------------------

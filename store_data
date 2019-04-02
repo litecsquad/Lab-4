@@ -1,0 +1,10 @@
+Write code to tabulate the data from the...
+
+printf("%u\n%u\n%u\n%u\n%u", counts, error, range, Motor_PW, Servo_PW);
+
+
+//counts      //so we can record time/
+//error       //compass heading error
+//range       //ranger value
+//Motor_PW    //drive motor PW (after + or - command)
+//Servo_PW    //steering motor PW

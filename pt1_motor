@@ -1,7 +1,7 @@
 /*  Names: Galilea Olvera,
     Section: 4
     Date: 3/22/2019
-    File name: LAB 3-3 PART 1
+    File name: LAB 4 PART 1
 */
 
 //-----------------------------------------------------------------------------
@@ -79,31 +79,36 @@ void main(void)
 	//PCA0CPL2 = 0xFFFF - MOTOR_PW;
 	//PCA0CPH2 = (0xFFFF - MOTOR_PW) >> 8;
 	
+    /*The steering gain must also be selectable. As with the heading, the entry is done using the
+    keypad. Entry options include: 1) select from a menu, 2) increment or decrement using key
+    strokes, or 3) key in a value. (Please only pick one option, not all.)*/
 	PCA0CP2 = 0xFFFF - MOTOR_NEUT;
 	while(1)
 	{
-
-		//make sure everything is off
-		//printf("going into the loop");
 		
-		if (SS) //(!SS1 && !SS2 && !SS3)
+		if (SS) //PUT MOTOR IN NEUTRAL
 		{
 			printf("\r\nEVERYTHING OFF");
 		}
 		else if (!SS)
         {   
+            printf('\r\nSWITCH TURNED ON')
             print = 0;
 	        r_count = 0;
 	        r_ranger = 0;
+            
+            printf('\r\nPress + on your keyboard to speed up, - to slow down, or N/n to go into neutral.\r\n');
 
             while(!SS)
             {
+
                 if(r_ranger == 1) 
                 {
-                    set_speed();
                     range = Read_Ranger();
+                    input = getchar_new(); // +,-, or N
+
                     ping(); //return data
-                    //READ LIGHT SENSOR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    Speed_Control();
                     Drive_Motor();
                     r_ranger = 0;
                 }
@@ -135,6 +140,8 @@ void XBR0_Init()
 // PCA
 //-------------------------------------------------------------------------
 
+/*The steering servo and the speed controller must be updated every 20 ms. The PCA hardware
+does this automatically as long as it is properly configured.*/
 
 void PCA_Init(void) //do not touch
 {
@@ -147,7 +154,7 @@ void PCA_Init(void) //do not touch
 	EIE1 |= 0x08;		// enable PCA Interrupt request (by masking)
 	EA = 1;			// enable global interrupts (by sbit)
 }
-
+/*******************************************************************************/
 void PCA_ISR ( void ) __interrupt 9
 {
 	if (CF)
@@ -195,22 +202,18 @@ void Drive_Motor(void)
 }
 /********************************************************/
 unsigned int Speed_Control(void)
-{   //determined by POT analog value
-    //my_ADC = ADC_printing(); call the ADC function
-    if (my_ADC < 1200)
+{   
+    if (input == 'N' or input == 'n') //NEUTRAL
     {
-        part = 0; //change speed PW
-        Change_Pulsewidth(0,0);
-        MOTOR_PW = MOTOR_MIN;
+        MOTOR_PW = 0;
     }
-    else if (my_ADC > 1200)
+    else if (input == '+')
     {
-        Change_Pulsewidth();
-        MOTOR_PW = MOTOR_MAX;
+        MOTOR_PW += 25;
     }
-    else if (my_ADC == 1200)
+    else if (input == '-')
     {
-        MOTOR_PW = MOTOR_NEUT;
+        MOTOR_PW -=25;
     }
 
     PCA0CP2 = 0xFFFF - MOTOR_PW;
@@ -240,63 +243,5 @@ unsigned int Read_Ranger()
 	
 	return range;
 }
-
-
-//-------------------------------------------
-// CHANGE_PULSEWIDTH
-//-------------------------------------------
-void Change_Pulsewidth(char part, int raw_val)
-
-{	
-	int error;
-	unsigned int temp_servo;
-
-    if(part == 0)
-    {
-
-    }
-
-//Compass part
-	int error;
-	unsigned int temp_servo;
-
-	if (part == 1)
-	{	
-
-		error = desired_heading - raw_val;
-		temp_servo = ((1)*error + PW_CENTER);
-
-		if ( error > 1800)
-		{
-			error -= 3600; // Fix value
-
-		}
-		else if ( error <- 1800)
-		{
-			error += 3600; // Fix value
-		}		
-		printf("error = %d \r\n",error);
-
-		if ( temp_servo > PW_MAX )
-		{
-			temp_servo = PW_MAX;
-		}
-
-		if (temp_servo < PW_MIN)
-		{
-			temp_servo = PW_MIN;
-		}
-
-		PW = temp_servo;
-
-		buf=0xFFFF-PW;
-		printf("PW = %u \r\n",buf);
-
-
-		PCA0CP0 = buf;
-
-	    printf("PulseWidth= %u\n\rDesired_Heading= %u\n\rActual_Heading= %u\r\n", PW,desired_heading,raw_val);
-	    
-	}
 
 	

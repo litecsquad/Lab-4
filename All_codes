@@ -191,7 +191,7 @@ void PCA_ISR(void) __interrupt 9
 		{
 			r_LCD = 1;
 		}			
-		if (counts%5000 = 0) //if 1000ms = 1s pass (20ms/count)
+		if (counts%10000 = 0) //if 2000ms = 2s pass (20ms/count)
 		{
 			print_ADC = 1; //set print_ADC flag
 		}
@@ -211,7 +211,7 @@ void ADC_printing(void)
 	{
 		my_ADC = read_AD_input(4);	//return ADC value at P1.4
 		my_ADC *= 2400/256;		//convert to mV
-		LCD_print("Battery: %c mV", my_ADC);
+		lcd_print("Battery: %c mV", my_ADC);
 		print_ADC = 0;			//clear print flag
 	}
 }

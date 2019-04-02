@@ -211,7 +211,7 @@ void ADC_printing(void)
 	{
 		my_ADC = read_AD_input(4);	//return ADC value at P1.4
 		my_ADC *= 2400/256;		//convert to mV
-		printf("ADC value: %c mV", my_ADC);
+		LCD_print("Battery: %c mV", my_ADC);
 		print_ADC = 0;			//clear print flag
 	}
 }

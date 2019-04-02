@@ -37,6 +37,8 @@ int Max_Servo = 3899;
 int Min_Servo =2069;
 char wait;
 unsigned char print_ADC = 0;
+unsinged int Motor_PW;
+unsigned int Servo_PW;
 
 unsigned char new_heading = 0; // flag for count of compass timing
 unsigned char new_range = 0; // flag for count of ranger timing

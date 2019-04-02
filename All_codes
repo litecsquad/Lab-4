@@ -103,7 +103,7 @@ void main(void)
 		{
 			
 			lcd_clear();
-			lcd_print("Heading = %u    Range = %u \r\n Battery = %u\r\n", heading, range, battery);
+			lcd_print("Heading = %u    Range = %u \r\n Battery = %u\r\n", heading, range, my_ADC);
 			r_LCD = 0;
 
 		}
@@ -211,7 +211,7 @@ void ADC_printing(void)
 	{
 		my_ADC = read_AD_input(4);	//return ADC value at P1.4
 		my_ADC *= 2400/256;		//convert to mV
-		lcd_print("Battery: %c mV", my_ADC);
+		//lcd_print("Battery: %c mV", my_ADC);
 		print_ADC = 0;			//clear print flag
 	}
 }

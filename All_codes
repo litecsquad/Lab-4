@@ -49,6 +49,7 @@ int range_adj = 0; // correction value from ranger
 unsigned char r_count; // overflow count for range
 unsigned char h_count; // overflow count for heading
 unsigned char print_count; // overflow count for printing
+int error;
 
 __sbit __at 0xB7 SS; //Port3 Pin 7 -- RUN/STOP
 
@@ -245,7 +246,7 @@ void Change_Pulsewidth(char part, int raw_val)
 // Need to add all parts to this
 
 //Compass part
-	int error;
+	//int error;
 	unsigned int temp_servo;
 
 	if (part == 1)
